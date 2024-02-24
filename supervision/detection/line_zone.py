@@ -189,11 +189,11 @@ class LineZone:
             if tracker_state:
                 self.in_count += 1
                 crossed_in[i] = True
-                if self.callback is not None: self.callback(detections[i])
+                if self.callback is not None: self.callback(detections[i],True,False)
             else:
                 self.out_count += 1
                 crossed_out[i] = True
-                if self.callback is not None: self.callback(detections[i])
+                if self.callback is not None: self.callback(detections[i],False,True)
 
         return crossed_in, crossed_out
 
