@@ -1,4 +1,4 @@
-from typing import Dict, Iterable, Optional, Tuple
+from typing import Dict, Iterable, Optional, Tuple, Callable
 
 import cv2
 import numpy as np
@@ -64,16 +64,21 @@ class LineZone:
             Position.BOTTOM_LEFT,
             Position.BOTTOM_RIGHT,
         ),
+        callback: Optional[Callable[[Detections,bool,bool], None]] = None,
     ):
         """
         Args:
-            start (Point): The starting point of the line.
-            end (Point): The ending point of the line.
+            start (Point): The starting point of the line, represented as a `sv.Point` object with x and y attributes.
+            end (Point): The ending point of the line, represented as a `sv.Point` object with x and y attributes.
             triggering_anchors (List[sv.Position]): A list of positions
                 specifying which anchors of the detections bounding box
                 to consider when deciding on whether the detection
                 has passed the line counter or not. By default, this
                 contains the four corners of the detection's bounding box
+            callback (Optional[Callable[[Detections,bool,bool], None]]): A
+                optional callback function for when adetection crosses the
+                line. The function recieves a sv.Detections object, and two
+                booleans to identify an object going in and out.
         """
         self.vector = Vector(start=start, end=end)
         self.limits = self.calculate_region_of_interest_limits(vector=self.vector)
@@ -81,6 +86,7 @@ class LineZone:
         self.in_count: int = 0
         self.out_count: int = 0
         self.triggering_anchors = triggering_anchors
+        self.callback = callback
 
     @staticmethod
     def calculate_region_of_interest_limits(vector: Vector) -> Tuple[Vector, Vector]:
@@ -183,9 +189,11 @@ class LineZone:
             if tracker_state:
                 self.in_count += 1
                 crossed_in[i] = True
+                if self.callback is not None: self.callback(detections[i])
             else:
                 self.out_count += 1
                 crossed_out[i] = True
+                if self.callback is not None: self.callback(detections[i])
 
         return crossed_in, crossed_out
 
