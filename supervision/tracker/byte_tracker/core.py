@@ -1,4 +1,5 @@
 from typing import List, Tuple
+from copy import deepcopy
 
 import numpy as np
 
@@ -241,7 +242,7 @@ class ByteTrack:
         tracks = self.update_with_tensors(
             tensors=detections2boxes(detections=detections)
         )
-        detections = Detections.empty()
+        detections = deepcopy(detections)
         if len(tracks) > 0:
             detections.xyxy = np.array(
                 [track.tlbr for track in tracks], dtype=np.float32
